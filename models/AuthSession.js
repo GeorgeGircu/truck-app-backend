@@ -52,7 +52,6 @@ const authSessionSchema = new mongoose.Schema(
     expiresAt: {
       type: Date,
       required: true,
-      index: true,
     },
     revokedAt: {
       type: Date,
@@ -79,11 +78,11 @@ authSessionSchema.index({ userId: 1, deviceId: 1, createdAt: -1 });
 /** Curățare automată a sesiunilor expirate (nu înlocuiește revoke explicit). */
 authSessionSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
 
-authSessionSchema.pre('validate', function requireTokenRef(next) {
+// Mongoose 9: middleware sync fără next() — altfel next poate fi undefined → TypeError la save/create
+authSessionSchema.pre('validate', function requireTokenRef() {
   if (!this.refreshTokenHash && !this.accessJti) {
-    return next(new Error('AuthSession requires refreshTokenHash or accessJti'));
+    throw new Error('AuthSession requires refreshTokenHash or accessJti');
   }
-  next();
 });
 
 module.exports = mongoose.model('AuthSession', authSessionSchema);

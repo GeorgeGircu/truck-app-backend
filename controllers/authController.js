@@ -319,7 +319,7 @@ const loginUser = async (req, res) => {
             },
             $unset: { pendingTransfer: '' },
           },
-          { upsert: true, new: true, runValidators: false }
+          { upsert: true, new: true, runValidators: true }
         );
       } else if (freshActive.deviceId === deviceIdStr) {
         await UserDevice.findOneAndUpdate(
@@ -335,7 +335,7 @@ const loginUser = async (req, res) => {
               lastAuthAt: new Date(),
             },
           },
-          { upsert: true, new: true, runValidators: false }
+          { upsert: true, new: true, runValidators: true }
         );
       }
     } else {
@@ -352,7 +352,7 @@ const loginUser = async (req, res) => {
             lastAuthAt: new Date(),
           },
         },
-        { upsert: true, new: true, runValidators: false }
+        { upsert: true, new: true, runValidators: true }
       );
     }
 
