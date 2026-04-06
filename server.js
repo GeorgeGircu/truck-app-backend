@@ -16,10 +16,39 @@ app.get('/health', (req, res) => {
   res.json({ status: 'ok' });
 });
 
+/** mongoose.connection.readyState: 0 disconnected, 1 connected, 2 connecting, 3 disconnecting */
+function mongoConnectionLabel() {
+  switch (mongoose.connection.readyState) {
+    case 1:
+      return 'connected';
+    case 2:
+      return 'connecting';
+    case 3:
+      return 'disconnecting';
+    case 0:
+    default:
+      return 'disconnected';
+  }
+}
+
+app.get('/health/db', (req, res) => {
+  const state = mongoConnectionLabel();
+  const status = state === 'connected' ? 'ok' : 'degraded';
+  res.json({
+    status,
+    db: { state },
+  });
+});
+
 mongoose
   .connect(process.env.MONGO_URI)
-  .then(() => console.log('MongoDB connected'))
-  .catch((err) => console.error('MongoDB error:', err));
+  .then(() => console.log('Mongo connected'))
+  .catch((err) =>
+    console.error(
+      'Mongo connection error:',
+      err && err.message ? err.message : err
+    )
+  );
 
 app.use('/api/auth', authRoutes);
 app.use('/api/navigation', navigationRoutes);
