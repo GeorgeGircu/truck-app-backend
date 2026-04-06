@@ -35,7 +35,9 @@ function deriveRoutingPackageKey(countryCode, packageVersion) {
     'utf8'
   );
   const info = Buffer.from('ironpilox-routing-pkg-v1', 'utf8');
-  return crypto.hkdfSync('sha256', master, salt, info, KEY_LENGTH);
+  // Node poate întoarce ArrayBuffer; Buffer.from normalizează pentru AES / keyB64
+  const raw = crypto.hkdfSync('sha256', master, salt, info, KEY_LENGTH);
+  return Buffer.from(raw);
 }
 
 /**
