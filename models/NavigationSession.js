@@ -88,7 +88,6 @@ const navigationSessionSchema = new mongoose.Schema(
     expiresAt: {
       type: Date,
       required: true,
-      index: true,
     },
     endedAt: {
       type: Date,
@@ -103,13 +102,13 @@ const navigationSessionSchema = new mongoose.Schema(
 navigationSessionSchema.index({ userId: 1, deviceId: 1, status: 1 });
 navigationSessionSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
 
-navigationSessionSchema.pre('validate', function validateRewardGrant(next) {
+// Mongoose 9: evită next() în pre('validate') — poate fi undefined → TypeError la create
+navigationSessionSchema.pre('validate', function validateRewardGrant() {
   if (this.grantSource === 'rewarded_ad' && !this.rewardLogId) {
-    return next(
-      new Error('NavigationSession.rewardLogId is required when grantSource is rewarded_ad')
+    throw new Error(
+      'NavigationSession.rewardLogId is required when grantSource is rewarded_ad'
     );
   }
-  next();
 });
 
 module.exports = mongoose.model('NavigationSession', navigationSessionSchema);
