@@ -309,6 +309,8 @@ const loginUser = async (req, res) => {
           { userId: user._id, deviceId: deviceIdStr },
           {
             $set: {
+              userId: user._id,
+              deviceId: deviceIdStr,
               platform: info.platform,
               deviceLabel: info.deviceLabel,
               appVersion: info.appVersion,
@@ -324,6 +326,8 @@ const loginUser = async (req, res) => {
           { userId: user._id, deviceId: deviceIdStr },
           {
             $set: {
+              userId: user._id,
+              deviceId: deviceIdStr,
               platform: info.platform,
               deviceLabel: info.deviceLabel,
               appVersion: info.appVersion,
@@ -339,6 +343,8 @@ const loginUser = async (req, res) => {
         { userId: user._id, deviceId: deviceIdStr },
         {
           $set: {
+            userId: user._id,
+            deviceId: deviceIdStr,
             platform: info.platform,
             deviceLabel: info.deviceLabel,
             appVersion: info.appVersion,
@@ -521,6 +527,8 @@ const completeDeviceTransfer = async (req, res) => {
       { userId: user._id, deviceId: newId },
       {
         $set: {
+          userId: user._id,
+          deviceId: newId,
           platform: info.platform,
           deviceLabel: info.deviceLabel,
           appVersion: info.appVersion,
