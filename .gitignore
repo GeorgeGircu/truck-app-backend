@@ -1,0 +1,43 @@
+# Secrets — nu comita niciodată
+.env
+.env.*
+!.env.example
+
+# Flutter / Dart
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+build/
+*.iml
+
+# Generated / ephemeral (regenerate with flutter pub get)
+linux/flutter/ephemeral/
+macos/Flutter/ephemeral/
+windows/flutter/ephemeral/
+ios/Flutter/ephemeral/
+ios/Flutter/Flutter.podspec
+
+# IDE
+.idea/
+
+# Node
+node_modules/
+**/node_modules/
+
+# Logs / crash dumps
+*.log
+hs_err_pid*.log
+replay_pid*.log
+
+# Android local
+android/build/
+android/.gradle/
+android/local.properties
+
+# Map pipeline — surse și output foarte mari (R2 e sursa de adevăr)
+map-pipeline/node_modules/
+map-pipeline/sources/**/*.osm.pbf
+map-pipeline/output/**/*.mbtiles
+
+# macOS
+.DS_Store
