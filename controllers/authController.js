@@ -27,6 +27,7 @@ function generateToken(userId, opts = {}) {
   const payload = { id: String(userId) };
   if (opts.jti) payload.jti = opts.jti;
   if (opts.deviceId) payload.deviceId = opts.deviceId;
+
   return jwt.sign(payload, process.env.JWT_SECRET, {
     expiresIn: '7d',
   });
@@ -756,6 +757,77 @@ const resetPassword = async (req, res) => {
   }
 };
 
+const changeSubscription = async (req, res) => {
+  try {
+    const { desiredPlan } = req.body;
+
+    if (!desiredPlan) {
+      return res.status(400).json({
+        code: 'PLAN_REQUIRED',
+        message: 'desiredPlan is required',
+      });
+    }
+
+    const normalizedPlan = String(desiredPlan).toLowerCase().trim();
+    const allowedPlans = ['free', 'basic', 'premium'];
+
+    if (!allowedPlans.includes(normalizedPlan)) {
+      return res.status(400).json({
+        code: 'INVALID_PLAN',
+        message: `desiredPlan must be one of: ${allowedPlans.join(', ')}`,
+      });
+    }
+
+    const user = await User.findById(req.user.id);
+
+    if (!user) {
+      return res.status(404).json({
+        code: 'USER_NOT_FOUND',
+      });
+    }
+
+    const previousPlan = subscriptionPlanOf(user);
+    user.subscriptionPlan = normalizedPlan;
+
+    if (isPremiumPlan(normalizedPlan)) {
+      if (!user.premiumActivatedAt) {
+        user.premiumActivatedAt = new Date();
+      }
+    } else {
+      user.premiumActivatedAt = undefined;
+
+      await UserDevice.updateMany(
+        { userId: user._id, premiumBindingStatus: { $ne: 'none' } },
+        {
+          $set: { premiumBindingStatus: 'none' },
+          $unset: { pendingTransfer: '' },
+        }
+      );
+    }
+
+    await user.save();
+
+    return res.status(200).json({
+      code:
+        previousPlan === normalizedPlan
+          ? 'SUBSCRIPTION_UNCHANGED'
+          : 'SUBSCRIPTION_UPDATED',
+      user: {
+        id: user._id,
+        email: user.email,
+        isVerified: user.isVerified,
+        subscriptionPlan: user.subscriptionPlan,
+        premiumActivatedAt: user.premiumActivatedAt,
+      },
+    });
+  } catch (error) {
+    console.error('changeSubscription error:', error);
+    return res.status(500).json({
+      code: 'SERVER_ERROR',
+    });
+  }
+};
+
 module.exports = {
   registerUser,
   verifyEmail,
@@ -767,4 +839,6 @@ module.exports = {
   getMe,
   forgotPassword,
   resetPassword,
-};  
+  changeSubscription,
+};
+Acum sunt bune? 
