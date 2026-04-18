@@ -253,6 +253,7 @@ const loginUser = async (req, res) => {
           id: user._id,
           email: user.email,
           isVerified: user.isVerified,
+          subscriptionPlan: subscriptionPlanOf(user),
         },
         legacyAuth: true,
       });
@@ -289,6 +290,7 @@ const loginUser = async (req, res) => {
             'Premium is already linked to another device. Use device transfer or login from that device.',
         });
       }
+
       if (decision.code === 'TRANSFER_REQUIRED') {
         return res.status(403).json({
           code: 'TRANSFER_REQUIRED',
@@ -372,6 +374,7 @@ const loginUser = async (req, res) => {
 
     const jti = randomTokenHex(16);
     const token = generateToken(user._id, { jti, deviceId: deviceIdStr });
+
     await AuthSession.create({
       userId: user._id,
       deviceId: deviceIdStr,
@@ -409,11 +412,13 @@ const loginUser = async (req, res) => {
 const initiateDeviceTransfer = async (req, res) => {
   try {
     const user = await User.findById(req.user.id);
+
     if (!user) {
       return res.status(404).json({ code: 'USER_NOT_FOUND' });
     }
 
     const plan = subscriptionPlanOf(user);
+
     if (!isPremiumPlan(plan)) {
       return res.status(403).json({
         code: 'NOT_PREMIUM',
@@ -441,11 +446,13 @@ const initiateDeviceTransfer = async (req, res) => {
     }
 
     const raw = randomTokenHex(24);
+
     active.pendingTransfer = {
       tokenHash: hashSecret(raw),
       expiresAt: new Date(Date.now() + 15 * 60 * 1000),
       initiatedAt: new Date(),
     };
+
     await active.save();
 
     return res.status(200).json({
@@ -471,6 +478,7 @@ const completeDeviceTransfer = async (req, res) => {
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
+
     if (!isMatch) {
       return res.status(400).json({ code: 'INVALID_CREDENTIALS' });
     }
@@ -547,6 +555,7 @@ const completeDeviceTransfer = async (req, res) => {
 
     const jti = randomTokenHex(16);
     const token = generateToken(user._id, { jti, deviceId: newId });
+
     await AuthSession.create({
       userId: user._id,
       deviceId: newId,
@@ -604,6 +613,7 @@ const logoutUser = async (req, res) => {
 const getMe = async (req, res) => {
   try {
     const user = await User.findById(req.user.id).select('-password');
+
     if (!user) {
       return res.status(404).json({ code: 'USER_NOT_FOUND' });
     }
@@ -616,6 +626,7 @@ const getMe = async (req, res) => {
     }).select('deviceId pendingTransfer.expiresAt');
 
     let thisDeviceRow = null;
+
     if (req.deviceIdFromToken) {
       thisDeviceRow = await UserDevice.findOne({
         userId: user._id,
@@ -756,4 +767,4 @@ module.exports = {
   getMe,
   forgotPassword,
   resetPassword,
-};
+};  
