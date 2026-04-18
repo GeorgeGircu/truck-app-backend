@@ -12,6 +12,7 @@ const {
   getMe,
   forgotPassword,
   resetPassword,
+  changeSubscription,
 } = require('../controllers/authController');
 
 const {
@@ -35,6 +36,13 @@ router.post('/logout', authenticate, requireActiveAccessSession, logoutUser);
 router.get('/me', authenticate, requireActiveAccessSession, getMe);
 
 router.post(
+  '/subscription',
+  authenticate,
+  requireActiveAccessSession,
+  changeSubscription
+);
+
+router.post(
   '/device/transfer',
   (req, res, next) => {
     if (req.body && req.body.step === 'complete') {
@@ -42,12 +50,14 @@ router.post(
         completeDeviceTransfer(req, res)
       );
     }
+
     if (!req.body || req.body.step !== 'initiate') {
       return res.status(400).json({
         code: 'VALIDATION_ERROR',
         message: 'body.step must be "initiate" or "complete"',
       });
     }
+
     return next();
   },
   authenticate,
