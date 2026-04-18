@@ -840,5 +840,4 @@ module.exports = {
   forgotPassword,
   resetPassword,
   changeSubscription,
-};
-Acum sunt bune? 
+}; 
