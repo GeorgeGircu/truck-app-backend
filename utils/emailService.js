@@ -47,8 +47,9 @@ const sendVerificationEmail = async (toEmail, code) => {
 };
 
 const sendResetEmail = async (toEmail, resetToken) => {
-  const clientUrl = process.env.CLIENT_URL || 'https://ironpilox.com';
-  const resetUrl = `${clientUrl}/#/reset-password/${resetToken}`;
+  const resetLinkOrigin =
+    (process.env.PASSWORD_RESET_LINK_ORIGIN || 'https://ironpilox.com').replace(/\/$/, '');
+  const resetUrl = `${resetLinkOrigin}/reset-password?token=${encodeURIComponent(resetToken)}`;
 
   const payload = {
     sender: {
